@@ -1,31 +1,20 @@
 {
-  description = "Advent of Code 2021";
+  description = "Advent of Code";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    neovim-flake = {
-      url = "github:hasundue/neovim-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { nixpkgs, flake-utils, neovim-flake, ... }:
+  outputs = { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        neovim = with neovim-flake.${system}; mkNeovim {
-          # Make sure NOT to enable Copilot!
-          modules = [ core deno nix ];
-        };
       in
       {
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [
             deno
-            git
-            gh
-            neovim
           ];
         };
       }
