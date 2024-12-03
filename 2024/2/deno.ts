@@ -21,6 +21,16 @@ function isSafe(report: number[]) {
   return true;
 }
 
-const result = reports.filter(isSafe).length;
+console.log(reports.filter(isSafe).length);
+
+function applyDampner(report: number[]): number[][] {
+  return [
+    report,
+    ...report.map((_, i) => report.toSpliced(i, 1)),
+  ];
+}
+
+const result = reports.map(applyDampner)
+  .filter((reports) => reports.some(isSafe)).length;
 
 console.log(result);
