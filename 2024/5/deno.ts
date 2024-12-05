@@ -31,10 +31,16 @@ function partitionUpdates(rules: RuleMap, updates: number[][]): [number[][], num
     update.every((page, i) =>
       update.slice(0, i).every((before) => {
         const rule = rules.get(page);
-        if (!rule) return true;
-        return !rule.has(before);
+        return !rule || !rule.has(before);
       })
     )
+  );
+}
+
+function addUpMiddle(updates: UpdateList): number {
+  return updates.reduce(
+    (total, update) => total + update[(update.length - 1) / 2],
+    0,
   );
 }
 
@@ -43,19 +49,26 @@ export function partOne(input: string): number {
 
   const [correct] = partitionUpdates(rules, updates);
 
-  return correct.reduce(
-    (total, update) => total + update[(update.length - 1) / 2],
-    0,
-  );
-}
-
-if (import.meta.main) {
-  const input = await Deno.readTextFile("./2024/5/input.txt");
-  console.log("Part One: " + partOne(input));
+  return addUpMiddle(correct);
 }
 
 export function partTwo(input: string): number {
   const [rules, updates] = parseInput(input);
 
   const [, incorrect] = partitionUpdates(rules, updates);
+
+  const corrected = incorrect.map((update) =>
+    update.toSorted((a, b) => {
+      const rule = rules.get(b);
+      if (!rule) return 0;
+      if (rule.has(a)) return -1; else return 1;
+    }).toReversed());
+
+  return addUpMiddle(corrected);
+}
+
+if (import.meta.main) {
+  const input = await Deno.readTextFile("./2024/5/input.txt");
+  console.log("Part One: " + partOne(input));
+  console.log("Part Two: " + partTwo(input));
 }
