@@ -35,6 +35,7 @@ function patrol(
   map: FloorMap,
   start: Pos,
   direction: Direction,
+  fn: (curr: Pos, direction: Direction) => void = () => {},
 ) {
   const size = getSize(map);
 
@@ -43,6 +44,8 @@ function patrol(
   let dir: Direction = direction;
 
   while (true) {
+    fn(curr, dir);
+
     const forward = move(curr, dir);
 
     const inner = visited.get(curr[0]) ??
@@ -50,8 +53,8 @@ function patrol(
 
     const last = inner.get(curr[1]);
 
-    if (last && isSame(last, turn(dir))) {
-      //
+    if (last && isSame(last, dir)) {
+      throw curr; // infinite loop
     }
     inner.set(curr[1], dir);
 
@@ -70,19 +73,35 @@ function patrol(
 
 export function partOne(input: string): number {
   const map = getMap(input);
-
   const start = getStartPos(map);
   const visited = patrol(map, start, [-1, 0]);
-  console.log(visited);
 
   return visited.values().reduce((total, set) => total + set.size, 0);
+}
+
+export function partTwo(input: string): number {
+  const map = getMap(input);
+  const start = getStartPos(map);
+  const found = new Set<Pos>();
+  patrol(map, start, [-1, 0], (curr: Pos, dir: Direction) => {
+    const front = move(curr, dir);
+    try {
+      patrol(
+        map.map((row, i) =>
+          i === front[0] ? row.toSpliced(front[1], 1, "#") : row
+        ),
+        curr,
+        turn(dir),
+      );
+    } catch (pos) {
+      found.add(pos as Pos);
+    }
+  });
+  return found.size;
 }
 
 if (import.meta.main) {
   const input = await Deno.readTextFile("./2024/6/input.txt");
   console.log(partOne(input));
-}
-
-export function partTwo(input: string): number {
-  return 0;
+  console.log(partTwo(input));
 }
