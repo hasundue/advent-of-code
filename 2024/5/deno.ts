@@ -1,9 +1,9 @@
 import { partition } from "jsr:@std/collections";
 
 type RuleMap = Map<number, Set<number>>;
-type UpdateList = number[][];
+type Update = number[];
 
-function parseInput(input: string): [RuleMap, UpdateList] {
+function parseInput(input: string): [RuleMap, Update[]] {
   const lines = input.split("\n").slice(0, -1);
 
   const sep = lines.findIndex((line) => line === "");
@@ -26,18 +26,23 @@ function parseInput(input: string): [RuleMap, UpdateList] {
   return [rules, updates];
 }
 
-function partitionUpdates(rules: RuleMap, updates: number[][]): [number[][], number[][]] {
-  return partition(updates, (update) =>
-    update.every((page, i) =>
-      update.slice(0, i).every((before) => {
-        const rule = rules.get(page);
-        return !rule || !rule.has(before);
-      })
-    )
+function partitionUpdates(
+  rules: RuleMap,
+  updates: Update[],
+): [Update[], Update[]] {
+  return partition(
+    updates,
+    (update) =>
+      update.every((page, i) =>
+        update.slice(0, i).every((before) => {
+          const rule = rules.get(page);
+          return !rule || !rule.has(before);
+        })
+      ),
   );
 }
 
-function addUpMiddle(updates: UpdateList): number {
+function addUpMiddle(updates: Update[]): number {
   return updates.reduce(
     (total, update) => total + update[(update.length - 1) / 2],
     0,
@@ -60,9 +65,9 @@ export function partTwo(input: string): number {
   const corrected = incorrect.map((update) =>
     update.toSorted((a, b) => {
       const rule = rules.get(b);
-      if (!rule) return 0;
-      if (rule.has(a)) return -1; else return 1;
-    }).toReversed());
+      return (!rule || !rule.has(a)) ? 0 : -1;
+    }).toReversed()
+  );
 
   return addUpMiddle(corrected);
 }
