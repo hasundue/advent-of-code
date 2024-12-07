@@ -54,7 +54,7 @@ function patrol(
     const last = inner.get(curr[1]);
 
     if (last && isSame(last, dir)) {
-      throw curr; // infinite loop
+      throw start; // infinite loop
     }
     inner.set(curr[1], dir);
 
@@ -82,7 +82,7 @@ export function partOne(input: string): number {
 export function partTwo(input: string): number {
   const map = getMap(input);
   const start = getStartPos(map);
-  const found = new Set<Pos>();
+  const found = new Map<number, Set<number>>();
   patrol(map, start, [-1, 0], (curr: Pos, dir: Direction) => {
     const front = move(curr, dir);
     try {
@@ -91,13 +91,16 @@ export function partTwo(input: string): number {
           i === front[0] ? row.toSpliced(front[1], 1, "#") : row
         ),
         curr,
-        turn(dir),
+        dir,
       );
-    } catch (pos) {
-      found.add(pos as Pos);
+    } catch {
+      const front = move(curr, dir);
+      const set = found.get(front[0]) ??
+        found.set(front[0], new Set()).get(front[0])!;
+      set.add(front[1]);
     }
   });
-  return found.size;
+  return found.values().reduce((total, set) => total + set.size, 0);
 }
 
 if (import.meta.main) {
