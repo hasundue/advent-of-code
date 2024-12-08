@@ -32,6 +32,22 @@ function getOffset(a: Antenna, b: Antenna): Offset {
   };
 }
 
+function normal(offset: Offset): Offset {
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+  const div = gcd(offset.row, offset.col);
+  return {
+    row: offset.row / div,
+    col: offset.col / div,
+  };
+}
+
+function opposite(offset: Offset): Offset {
+  return {
+    row: -offset.row,
+    col: -offset.col,
+  };
+}
+
 type Antinode = {
   row: number;
   col: number;
@@ -87,9 +103,7 @@ class AntennaMap {
     return distinctBy(antinodes, (it) => `${it.row},${it.col}`);
   }
 
-  private antinodesForFreq(
-    antennas: Antenna[],
-  ): Antinode[] {
+  private antinodesForFreq(antennas: Antenna[]): Antinode[] {
     const pairs = combinations(antennas);
     return pairs.flatMap((pair) => this.antinodesForPair(pair));
   }
@@ -103,11 +117,53 @@ class AntennaMap {
     ];
     return candidates.filter((it) => this.covers(it.row, it.col));
   }
+
+  manyAntinodes(): Antinode[] {
+    const entries = this.list();
+    const antinodes = groupByFreq(entries).flatMap(
+      (group) => this.manyAntinodesForFreq(group),
+    );
+    return distinctBy(antinodes, (it) => `${it.row},${it.col}`);
+  }
+
+  manyAntinodesForFreq(antennas: Antenna[]): Antinode[] {
+    const pairs = combinations(antennas);
+    return pairs.flatMap((pair) => this.manyAntinodesForPair(pair));
+  }
+
+  manyAntinodesForPair([a, b]: [Antenna, Antenna]): Antinode[] {
+    const offset = getOffset(a, b);
+    const norm = normal(offset);
+    console.log(norm);
+    return [
+      ...this.manyAntinodesForPairWithOffset(a, opposite(norm)),
+      ...this.manyAntinodesForPairWithOffset(b, norm),
+    ];
+  }
+
+  manyAntinodesForPairWithOffset(a: Antenna, offset: Offset): Antinode[] {
+    const candidates: Antinode[] = [];
+    let current = { row: a.row + offset.row, col: a.col + offset.col };
+    while (this.covers(current.row, current.col)) {
+      candidates.push(current);
+      current = {
+        row: current.row + offset.row,
+        col: current.col + offset.col,
+      };
+    }
+    return candidates;
+  }
 }
 
 export function countAntinodes(input: string): number {
   const antennas = new AntennaMap(input);
   const antinodes = antennas.antinodes();
+  return antinodes.length;
+}
+
+export function countManyAntinodes(input: string): number {
+  const antennas = new AntennaMap(input);
+  const antinodes = antennas.manyAntinodes();
   return antinodes.length;
 }
 
