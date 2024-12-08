@@ -134,7 +134,6 @@ class AntennaMap {
   manyAntinodesForPair([a, b]: [Antenna, Antenna]): Antinode[] {
     const offset = getOffset(a, b);
     const norm = normal(offset);
-    console.log(norm);
     return [
       ...this.manyAntinodesForPairWithOffset(a, opposite(norm)),
       ...this.manyAntinodesForPairWithOffset(b, norm),
@@ -143,7 +142,7 @@ class AntennaMap {
 
   manyAntinodesForPairWithOffset(a: Antenna, offset: Offset): Antinode[] {
     const candidates: Antinode[] = [];
-    let current = { row: a.row + offset.row, col: a.col + offset.col };
+    let current = { row: a.row, col: a.col };
     while (this.covers(current.row, current.col)) {
       candidates.push(current);
       current = {
@@ -172,4 +171,5 @@ if (import.meta.main) {
     new URL("./input.txt", import.meta.url),
   );
   console.log(countAntinodes(input));
+  console.log(countManyAntinodes(input));
 }
