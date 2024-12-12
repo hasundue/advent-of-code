@@ -84,7 +84,20 @@ function identical(a: Point, b: Point): boolean {
   return a[0] === b[0] && a[1] === b[1];
 }
 
+export function partTwo(input: string): number {
+  const map = parseInput(input);
+  const starts = findZeros(map);
+  const trailheads = starts.map((start) => {
+    const rating = routes(map, start).length;
+    if (rating > 0) {
+      return { start, rating };
+    }
+  }).filter((it) => it !== undefined);
+  return trailheads.reduce((total, it) => total + it.rating, 0);
+}
+
 if (import.meta.main) {
   const input = await Deno.readTextFile(new URL("input.txt", import.meta.url));
   console.log(partOne(input));
+  console.log(partTwo(input));
 }
