@@ -1,35 +1,34 @@
 export function partOne(input: string): number {
   const stones = parseInput(input);
-  blinkMany(stones, 25);
-  return stones.length;
+  return blinkAndCount(stones, 25);
 }
 
-function blinkMany(stones: number[], count: number): void {
-  for (let i = 0; i < count; i++) {
-    blink(stones);
-    console.log(i + 1 + ":", stones.length);
-  }
+function blinkAndCount(stones: number[], count: number): number {
+  return stones.reduce((acc, it) => acc + changeAndCount(it, count), 0);
 }
 
-function blink(stones: number[]): void {
-  let count = stones.length;
-  for (let i = 0; i < count; i++) {
-    const num = stones[i];
-    if (num === 0) {
-      stones[i] = 1;
-      continue;
-    }
-    const d = digits(num);
-    if (d % 2 === 0) {
-      const [left, right] = split(num, d / 2);
-      stones[i] = left;
-      stones.splice(i + 1, 0, right);
-      i++;
-      count++;
-    } else {
-      stones[i] = stones[i] * 2024;
-    }
+function changeAndCount(stone: number, counter: number): number {
+  if (counter === 0) {
+    return 1;
   }
+  const changed = change(stone);
+  if (typeof changed === "number") {
+    return changeAndCount(changed, counter - 1);
+  }
+  return changed.reduce((acc, it) => acc + changeAndCount(it, counter - 1), 0);
+}
+
+function change(
+  stone: number,
+): number | [number, number] {
+  if (stone === 0) {
+    return 1;
+  }
+  const d = digits(stone);
+  if (d % 2 === 0) {
+    return split(stone, d / 2);
+  }
+  return stone * 2024;
 }
 
 function digits(num: number): number {
@@ -49,8 +48,7 @@ function parseInput(input: string): number[] {
 
 export function partTwo(input: string): number {
   const stones = parseInput(input);
-  blinkMany(stones, 75);
-  return stones.length;
+  return blinkAndCount(stones, 75);
 }
 
 if (import.meta.main) {
