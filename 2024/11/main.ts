@@ -4,7 +4,11 @@ export function partOne(input: string): number {
 }
 
 function blinkAndCount(stones: number[], count: number): number {
-  return stones.reduce((acc, it) => acc + changeAndCount(it, count), 0);
+  return stones.reduce((acc, it, i) => {
+    const curr = acc + changeAndCount(it, count);
+    console.log(i, curr);
+    return curr;
+  }, 0);
 }
 
 function changeAndCount(stone: number, counter: number): number {
