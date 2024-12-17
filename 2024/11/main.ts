@@ -11,6 +11,11 @@ function blinkAndCount(stones: number[], count: number): number {
   }, 0);
 }
 
+type Stone = number;
+type Counter = number;
+
+const TABLE = new Map<Stone, Map<Counter, typeof changeAndCount>>();
+
 function changeAndCount(stone: number, counter: number): number {
   if (counter === 0) {
     return 1;
